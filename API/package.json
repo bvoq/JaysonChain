@@ -1,18 +1,18 @@
 {
-  “name”: “JaysonChainApi”,
-  “version”: “0.0 .1”,
-  “description”: “JaysonChainApi”,
-  “author”: “Timofey Derkovskiy < dtimofey @ethz.ch > ”,
-  “main”: “index.js”,
+  "name": "JaysonChainApi",
+  "version": "0.0.1",
+  "description": "JaysonChainApi",
+  "author": "Timofey Derkovskiy < dtimofey @ethz.ch > ",
+  "main": "index.js",
 
-  “dependencies”: {},
+  "dependencies": {},
 
-  “devDependencies”: {“
-    chai”: “ * ”,
-    “mocha”: “ * ”
+  "devDependencies": {
+    "chai": " * ",
+    "mocha": " * "
   },
 
-  “scripts”: {“
-    zip”: “zip - r.. / testing.zip * ”
+  "scripts": {
+    "zip": "zip - r.. / testing.zip *"
   }
 }
