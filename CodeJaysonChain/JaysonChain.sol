@@ -61,8 +61,8 @@ contract JaysonChain is Owned {
     	globalInternalTimeStamp++;
 	}*/
 	
-	function readAttribute(uint assetIndex, uint historyNo) public returns(Attribute) {
-	    return allAssets[assetIndex].history[historyNo];
+	function readAttribute(uint assetIndex, uint attributeIndex) public returns(Attribute) {
+	    return allAssets[assetIndex].history[attributeIndex];
 	}
 	
 	struct WritePermissionEntry {
@@ -73,10 +73,11 @@ contract JaysonChain is Owned {
 	
 	
 	struct ReadPermissionEntry {
-	    //assetIndex, attributeIndex, string
-	    uint256 encryptedAssetIndex;
+	    //This is the attribute index to which you want to give access to. 
 	    uint256 encryptedAttributeIndex;
-	    uint256 encryptedKey;
+	    
+	    //This is the symmetric key to read the attribute encrypted with the public key of the one, you want to give read access.
+	    uint256 encryptedSymmetricKey;
 	}
 	
 	struct Asset {
@@ -88,6 +89,8 @@ contract JaysonChain is Owned {
 		mapping(address => WritePermissionEntry[]) writePermissionTable; //you can add attributes with the following names. Later add timeout.
 	}
 	
+	
+	
 	Asset[] public allAssets;
 
 	function createAsset() public {
@@ -96,8 +99,15 @@ contract JaysonChain is Owned {
 	    newAsset.assetIndex = allAssets.length;
 	    allAssets.push(newAsset);
 	}
+	
+	function allowRead(uint assetIndex, address allowTo, uint256 encryptedAssetIndex, uint256 encryptedAttributeIndex, uint256 encryptedSymmetricKey) public isAssetOwner(assetIndex) {
+	    ReadPermissionEntry newPermissionEntry;
+	    newPermissionEntry.encryptedAttributeIndex = encryptedAttributeIndex;
+	    newPermissionEntry.encryptedSymmetricKey = encryptedSymmetricKey;
+	    allAssets[assetIndex].readPermissionTable[allowTo].push(newPermissionEntry);
+	}
 
-	function allowWrite(uint assetIndex, address allowTo, string attributeName, uint256 writeAmount) private isAssetOwner(assetIndex) {
+	function allowWrite(uint assetIndex, address allowTo, string attributeName, uint256 writeAmount) public isAssetOwner(assetIndex) {
 	    WritePermissionEntry newPermissionEntry;
 	    newPermissionEntry.attributeName = attributeName;
 	    newPermissionEntry.writeAmount = writeAmount;
@@ -111,7 +121,7 @@ contract JaysonChain is Owned {
 	}*/
 	
 	function disallowAllWrites(uint assetIndex, address disallowTo) public isAssetOwner(assetIndex) { //TODO
-	    
+        
 	}
 	
 	
