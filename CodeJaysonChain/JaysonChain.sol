@@ -61,7 +61,7 @@ contract JaysonChain {
 	function createAsset() public returns(uint256 assetIndex) {
 	    uint256 assetIndexLength = allAssets.length;
 
-	    Asset memory newAsset = Asset({owner:msg.sender, assetIndex:assetIndex, unixTime:now, internalTimeStamp:globalInternalTimeStamp, historyLength : 0});
+	    Asset memory newAsset = Asset({owner:msg.sender, assetIndex:assetIndexLength, unixTime:now, internalTimeStamp:globalInternalTimeStamp, historyLength : 0});
 	    allAssets.push(newAsset);
 	    globalInternalTimeStamp++;
 	    return assetIndexLength;
@@ -77,9 +77,6 @@ contract JaysonChain {
 	    WritePermissionEntry[] storage permissions = allAssets[assetIndex].writePermissionTable[author];
 	    
 	    bool mayWrite = false;
-	    bytes32 stuff = 0;
-	    if(mayWrite == true) stuff = 1; 
-
 	    for(uint256 i = 0; i < permissions.length; ++i) {
 	        
 	        if(keccak256(permissions[i].attributeName) == keccak256(name) && permissions[i].writeAmount >= 1){
@@ -88,7 +85,7 @@ contract JaysonChain {
 	        }
 	    }
 	    require(mayWrite);
-	   
+
 	    Attribute memory newAttribute;
 	    newAttribute.author = author;
 	    newAttribute.attributeIndex = allAssets[assetIndex].historyLength;
