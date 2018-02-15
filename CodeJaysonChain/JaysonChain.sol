@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.20;
 
 contract JaysonChain {
 	
@@ -13,32 +13,12 @@ contract JaysonChain {
 	}
 	
 	modifier attributeIndexInBound(uint assetIndex, uint attributeIndex){
-	    require(assetIndex < allAssets.length && attributeIndex < allAssets[assetIndex].history.length);
+	    require(assetIndex < allAssets.length && attributeIndex < allAssets[assetIndex].historyLength);
 	    _;
 	}
 	
 	
 	uint256 public globalInternalTimeStamp = 0;
-	
-	struct Asset {
-	    address owner;
-		uint256 assetIndex;
-		uint256 unixTime; //when this asset is created.
-	    uint256 internalTimeStamp; //not unix time.
-
-		Attribute[] history;
-		mapping(address => ReadPermissionEntry[]) readPermissionTable;
-		mapping(address => WritePermissionEntry[]) writePermissionTable; //you can add attributes with the following names. Later add timeout.
-	}
-	
-	struct Attribute {
-	    address author; //= msg.sender;
-	    uint256 attributeIndex;
-	    uint256 internalTimeStamp; //not unix time.
-		uint256 unixTime; // = now;
-	    string name;
-	    string data;
-	}
 	
 	struct WritePermissionEntry {
 	    //TODO timeout
@@ -54,20 +34,37 @@ contract JaysonChain {
 	    //This is the symmetric key to read the attribute encrypted with the public key of the one, you want to give read access.
 	    uint256 encryptedSymmetricKey;
 	}
+	
+	struct Asset {
+	    address owner;
+		uint256 assetIndex;
+		uint256 unixTime; //when this asset is created.
+	    uint256 internalTimeStamp; //not unix time.
 
+        uint256 historyLength;
+		mapping(uint256 => Attribute) history;
+		mapping(address => ReadPermissionEntry[]) readPermissionTable;
+		mapping(address => WritePermissionEntry[]) writePermissionTable; //you can add attributes with the following names. Later add timeout.
+	}
+	
+	struct Attribute {
+	    address author; //= msg.sender;
+	    uint256 attributeIndex;
+	    uint256 internalTimeStamp; //not unix time.
+		uint256 unixTime; // = now;
+	    string name;
+	    string data;
+	}
 	
 	Asset[] public allAssets;
-	Attribute[][] public allHistories;
 
-	function createAsset() public returns(uint256) {
-	    uint256 assetIndex = allAssets.length;
-	    allHistories.push(new Attribute[](0));
+	function createAsset() public returns(uint256 assetIndex) {
+	    uint256 assetIndexLength = allAssets.length;
 
-	    Attribute[] storage hist = allHistories[assetIndex];
-	    Asset memory newAsset = Asset({owner:msg.sender, assetIndex:assetIndex, unixTime:now, internalTimeStamp:globalInternalTimeStamp, history:hist});
+	    Asset memory newAsset = Asset({owner:msg.sender, assetIndex:assetIndex, unixTime:now, internalTimeStamp:globalInternalTimeStamp, historyLength : 0});
 	    allAssets.push(newAsset);
 	    globalInternalTimeStamp++;
-	    return newAsset.assetIndex;
+	    return assetIndexLength;
 	}
 	
 	
@@ -91,15 +88,15 @@ contract JaysonChain {
 	    permissions[i].writeAmount--; //no underflow possible, since writeAmount ≠ 0
 	   
 	   
-	    Attribute storage newAttribute;
+	    Attribute memory newAttribute;
 	    newAttribute.author = author;
-	    newAttribute.attributeIndex = allAssets[assetIndex].history.length;
+	    newAttribute.attributeIndex = allAssets[assetIndex].historyLength;
 	    newAttribute.internalTimeStamp = globalInternalTimeStamp;
 	    newAttribute.unixTime = now;
 	    newAttribute.name = name;
 	    newAttribute.data = data;
 	    
-	    allAssets[assetIndex].history.push(newAttribute);
+	    allAssets[assetIndex].history[allAssets[assetIndex].historyLength] = newAttribute;
 	    globalInternalTimeStamp++;
 	}
 	
@@ -158,7 +155,7 @@ contract JaysonChain {
 	assetIndexInBound(assetIndex)
 	{
 	    require(assetIndex < allAssets.length);
-	    ReadPermissionEntry storage newPermissionEntry;
+	    ReadPermissionEntry memory newPermissionEntry;
 	    newPermissionEntry.encryptedAttributeIndex = encryptedAttributeIndex;
 	    newPermissionEntry.encryptedSymmetricKey = encryptedSymmetricKey;
 	    allAssets[assetIndex].readPermissionTable[allowTo].push(newPermissionEntry);
@@ -181,7 +178,7 @@ contract JaysonChain {
 	    
 	    if(writeAmount == 0) return;
 	     
-	    WritePermissionEntry storage newPermissionEntry;
+	    WritePermissionEntry memory newPermissionEntry;
 	    newPermissionEntry.attributeName = attributeName;
 	    newPermissionEntry.writeAmount = writeAmount;
         allAssets[assetIndex].writePermissionTable[allowTo].push(newPermissionEntry);
@@ -205,7 +202,7 @@ contract JaysonChain {
             }
         }
 	    
-	    WritePermissionEntry storage newPermissionEntry;
+	    WritePermissionEntry memory newPermissionEntry;
 	    newPermissionEntry.attributeName = attributeName;
 	    newPermissionEntry.writeAmount = writeAmount;
         allAssets[assetIndex].writePermissionTable[allowTo].push(newPermissionEntry);
@@ -223,4 +220,3 @@ contract JaysonChain {
 	//"attributeX was wrong" is a new attribute 
 	
 }
-
