@@ -18,7 +18,6 @@ contract JaysonChain is Owned {
 		uint256 unixTime; // = now;
 	    string name;
 	    string data;
-	    
 	}
 	
 		
@@ -93,11 +92,12 @@ contract JaysonChain is Owned {
 	
 	Asset[] public allAssets;
 
-	function createAsset() public {
+	function createAsset() public returns(uint256) {
 	    Asset newAsset;
 	    newAsset.owner = msg.sender;
 	    newAsset.assetIndex = allAssets.length;
 	    allAssets.push(newAsset);
+	    return newAsset.assetIndex;
 	}
 	
 	function allowRead(uint assetIndex, address allowTo, uint256 encryptedAssetIndex, uint256 encryptedAttributeIndex, uint256 encryptedSymmetricKey) public isAssetOwner(assetIndex) {
@@ -107,7 +107,17 @@ contract JaysonChain is Owned {
 	    allAssets[assetIndex].readPermissionTable[allowTo].push(newPermissionEntry);
 	}
 
-	function allowWrite(uint assetIndex, address allowTo, string attributeName, uint256 writeAmount) public isAssetOwner(assetIndex) {
+	function setAllowWrites(uint assetIndex, address allowTo, string attributeName, uint256 writeAmount) public isAssetOwner(assetIndex) {
+	    //First check if it already exists and if so set to the new writeAmount 
+	    for(uint256 i = 0; i < allAssets[assetIndex].writePermissionTable[allowTo].length; ++i) {
+            bytes32 hash1 = keccak256(allAssets[assetIndex].writePermissionTable[allowTo][i].attributeName);
+            bytes32 hash2 = keccak256(attributeName);
+            if(hash1 == hash2) {
+                allAssets[assetIndex].writePermissionTable[allowTo][i].writeAmount = writeAmount;
+                return;
+            }
+        }
+	    
 	    WritePermissionEntry newPermissionEntry;
 	    newPermissionEntry.attributeName = attributeName;
 	    newPermissionEntry.writeAmount = writeAmount;
@@ -120,8 +130,17 @@ contract JaysonChain is Owned {
 	    for(uint256 i = 0; i < permissionNames.length; ++i) allowWrite(assetIndex, allowTo, permissionNames[i]);
 	}*/
 	
-	function disallowAllWrites(uint assetIndex, address disallowTo) public isAssetOwner(assetIndex) { //TODO
-        
+	function disallowAllWrites(uint256 assetIndex, address disallowTo, string attributeName) public isAssetOwner(assetIndex) { //TODO
+        setAllowWrites(assetIndex, disallowTo, attributeName, 0);
+        /*
+        //require(allAssets[assetIndex].writePermissionTable[disallowTo] != 0);
+        for(uint256 i = 0; i < allAssets[assetIndex].writePermissionTable[disallowTo].length; ++i) {
+            bytes32 hash1 = keccak256(allAssets[assetIndex].writePermissionTable[disallowTo][i].attributeName);
+            bytes32 hash2 = keccak256(attributeName);
+            if(hash1 == hash2) {
+                allAssets[assetIndex].writePermissionTable[disallowTo][i].writeAmount = 0;
+            }
+        }*/
 	}
 	
 	
@@ -129,3 +148,4 @@ contract JaysonChain is Owned {
 	//"attributeX was wrong" is a new attribute 
 	
 }
+
