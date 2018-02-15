@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+
+  <link rel="stylesheet" type="text/css" href="main.css">
+
+  <script src="./node_modules/web3/dist/web3.min.js"></script>
+
+</head>
+
+<body>
+  <div class="container">
+
+    <h1>JaysonChain</h1>
+
+    <audio id="sound1" src="oof.ogg" preload="auto"></audio>
+    <button onclick="document.getElementById('sound1').play();">oof</button>
+
+    <h2 id="instructor"></h2>
+
+    <textarea id="text" rows="5" cols="70"></textarea>
+
+    <button id="AssetButton">All Asssets</button>
+    <button id="newAssetButton">Create Asset</button>
+
+    <label for="name" class="col-lg-2 control-label">Asset ID</label>
+    <input id="assetid" type="text">
+
+    <label for="name" class="col-lg-2 control-label">Grant Permission</label>
+    <input id="age" type="text">
+
+    <label for="name" class="col-lg-2 control-label">Set Permission</label>
+    <input id="age" type="text">
+
+    <label for="name" class="col-lg-2 control-label">Push Asset</label>
+    <input id="age" type="text">
+
+    <button id="button">Update Instructor</button>
+
+
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+
+  <script>
+    // Our future code here..
+    if (typeof web3 !== 'undefined') {
+      web3 = new Web3(web3.currentProvider);
+    } else {
+      // set the provider you want from Web3.providers
+      web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+    }
+
+    web3.eth.defaultAccount = web3.eth.accounts[0];
+    var JaysonChainContract = web3.eth.contract([{
+          "constant": true,
+          "inputs": [],
+          "name": "globalInternalTimeStamp",
+          "outputs": [{
+            "name": "",
+            "type": "uint256"
+          }],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [{
+              "name": "assetIndex",
+              "type": "uint256"
+            },
+            {
+              "name": "attributeIndex",
+              "type": "uint256"
+            }
+          ],
+          "name": "readAttributeName",
+          "outputs": [{
+            "name": "name",
+            "type": "string"
+          }],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [{
+              "name": "assetIndex",
+              "type": "uint256"
+            },
+            {
+              "name": "attributeIndex",
+              "type": "uint256"
+            }
+          ],
+          "name": "readAttributeInternalTimeStamp",
+          "outputs": [{
+            "name": "internalTimeStamp",
+            "type": "uint256"
+          }],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [{
+              "name": "assetIndex",
+              "type": "uint256"
+            },
+            {
+              "name": "attributeIndex",
+              "type": "uint256"
+            }
+          ],
+          "name": "readAttributeData",
+          "outputs": [{
+            "name": "data",
+            "type": "string"
+          }],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [{
+              "name": "assetIndex",
+              "type": "uint256"
+            },
+            {
+              "name": "attributeIndex",
+              "type": "uint256"
+            }
+          ],
+          "name": "readAttributeAuthor",
+          "outputs": [{
+            "name": "author",
+            "type": "address"
+          }],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [{
+              "name": "assetIndex",
+              "type": "uint256"
+            },
+            {
+              "name": "attributeIndex",
+              "type": "uint256"
+            }
+          ],
+          "name": "readAttributeUnixTime",
+          "outputs": [{
+            "name": "internalTimeStamp",
+            "type": "uint256"
+          }],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": true,
+          "inputs": [{
+            "name": "",
+            "type": "uint256"
+          }],
+          "name": "allAssets",
+          "outputs": [{
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "name": "assetIndex",
+              "type": "uint256"
+            },
+            {
+              "name": "unixTime",
+              "type": "uint256"
+            },
+            {
+              "name": "internalTimeStamp",
+              "type": "uint256"
+            },
+            {
+              "name": "historyLength",
+              "type": "uint256"
+            }
+          ],
+          "payable": false,
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "constant": false,
+          "inputs": [{
+              "name": "assetIndex",
+              "type": "uint256"
+            },
+            {
+              "name": "allowTo",
+              "type": "address"
+            },
+            {
+              "name": "attributeName",
+              "type": "string"
+            },
+            {
+              "name": "writeAmount",
+              "type": "uint256"
+            }
+          ],
+          "name": "addAllowWrites",
+          "outputs": [],
+          "payable": false,
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "constant": false,
+          "inputs": [{
+              "name": "assetIndex",
+              "type": "uint256"
+            },
+            {
+              "name": "allowTo",
+              "type": "address"
+            },
+            {
+              "name": "attributeName",
+              "type": "string"
+            },
+            {
+              "name": "writeAmount",
+              "type": "uint256"
+            }
+          ],
+          "name": "setAllowWrites",
+          "outputs": [],
+          "payable": false,
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "constant": false,
+          "inputs": [{
+              "name": "assetIndex",
+              "type": "uint256"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "data",
+              "type": "string"
+            }
+          ],
+          "name": "addAttribute",
+          "outputs": [],
+          "payable": false,
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "constant": false,
+          "inputs": [{
+              "name": "assetIndex",
+              "type": "uint256"
+            },
+            {
+              "name": "disallowTo",
+              "type": "address"
+            },
+            {
+              "name": "attributeName",
+              "type": "string"
+            }
+          ],
+          "name": "disallowAllWrites",
+          "outputs": [],
+          "payable": false,
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "constant": false,
+          "inputs": [{
+              "name": "assetIndex",
+              "type": "uint256"
+            },
+            {
+              "name": "allowTo",
+              "type": "address"
+            },
+            {
+              "name": "encryptedAttributeIndex",
+              "type": "uint256"
+            },
+            {
+              "name": "encryptedSymmetricKey",
+              "type": "uint256"
+            }
+          ],
+          "name": "allowRead",
+          "outputs": [],
+          "payable": false,
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "constant": false,
+          "inputs": [],
+          "name": "createAsset",
+          "outputs": [{
+            "name": "assetIndex",
+            "type": "uint256"
+          }],
+          "payable": false,
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ]
+
+    )
+
+    var JaysonChain = JaysonChainContract.at("0xda0400e1a0527e3d17a95a6e863777e680ffd121");
+    console.log(JaysonChain);
+
+
+    $("#newAssetButton").click(function() {
+      JaysonChain.createAsset(function(error, result) {
+        if (!error)
+          console.log(result)
+        else
+          console.log(error)
+      });
+    });
+
+    /*    $("#publicKey").click(function(){
+          JaysonChain.genpubkey(function(error,result){
+            if (!error)
+              $("#pubkey").html(result);
+            else {
+                console.log(error);
+            }
+          }
+        })*/
+
+
+    $("#AssetButton").click(function() {
+      JaysonChain.allAssets($("#assetid").val() - 1, function(error, result) {
+        if (!error) {
+          $("#text").html(result[0] + '\n' + result[1] + '\n' + result[2] + '\n' + result[3] + '\n' + result[4])
+        } else {
+          console.log(error);
+        }
+      })
+    });
+
+    /*Coursetro.getInstructor(function(error, result) {
+      if (!error) {
+        $("#instructor").html(result[0] + ' (' + result[1] + ' years old)');
+        console.log(result);
+      } else
+        console.error(error);
+    });
+
+    $("#button").click(function() {
+      Coursetro.setInstructor($("#name").val(), $("#age").val());
+    });*/
+  </script>
+
+</body>
+
+</html>
