@@ -67,8 +67,6 @@ contract JaysonChain {
 	    return assetIndexLength;
 	}
 	
-	
-	
 	function addAttribute(uint assetIndex, string name, string data) public
 	assetIndexInBound(assetIndex)
 	{
@@ -76,17 +74,20 @@ contract JaysonChain {
         address author = msg.sender; 
 
 	    //Check if author may put name into allAssets[assetID].history, which is done in the permissionTable
-	    WritePermissionEntry[] memory permissions = allAssets[assetIndex].writePermissionTable[author];
+	    WritePermissionEntry[] storage permissions = allAssets[assetIndex].writePermissionTable[author];
+	    
 	    bool mayWrite = false;
+	    bytes32 stuff = 0;
+	    if(mayWrite == true) stuff = 1; 
+
 	    for(uint256 i = 0; i < permissions.length; ++i) {
+	        
 	        if(keccak256(permissions[i].attributeName) == keccak256(name) && permissions[i].writeAmount >= 1){
 	            mayWrite = true;   
+	            permissions[i].writeAmount--;
 	        }
 	    }
 	    require(mayWrite);
-	    
-	    permissions[i].writeAmount--; //no underflow possible, since writeAmount ≠ 0
-	   
 	   
 	    Attribute memory newAttribute;
 	    newAttribute.author = author;
