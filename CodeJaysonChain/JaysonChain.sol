@@ -20,19 +20,24 @@ contract JaysonChain {
 	
 	uint256 public globalInternalTimeStamp = 0;
 	
-	struct WritePermissionEntry {
-	    //TODO timeout
-	    string attributeName;
-	    uint256 writeAmount;
-	}
-	
 	
 	struct ReadPermissionEntry {
-	    //This is the attribute index to which you want to give access to. 
+	    //This is the asset index to which you want to give access to, encrypted with the public key for the one, you want to give read access.
+	    uint256 encryptedAssetIndex;
+	    
+	    //This is the attribute index to which you want to give access to, encrypted with the public key for the one, you want to give read access.
 	    uint256 encryptedAttributeIndex;
 	    
 	    //This is the symmetric key to read the attribute encrypted with the public key of the one, you want to give read access.
 	    uint256 encryptedSymmetricKey;
+	}
+	mapping(address => ReadPermissionEntry[]) readPermissionTable;
+
+	
+	struct WritePermissionEntry {
+	    //TODO timeout
+	    string attributeName;
+	    uint256 writeAmount;
 	}
 	
 	struct Asset {
@@ -43,7 +48,6 @@ contract JaysonChain {
 
         uint256 historyLength;
 		mapping(uint256 => Attribute) history;
-		mapping(address => ReadPermissionEntry[]) readPermissionTable;
 		mapping(address => WritePermissionEntry[]) writePermissionTable; //you can add attributes with the following names. Later add timeout.
 	}
 	
@@ -148,16 +152,18 @@ contract JaysonChain {
 	}
 	
 
-	function allowRead(uint assetIndex, address allowTo, uint256 encryptedAttributeIndex, uint256 encryptedSymmetricKey) public 
+	function allowRead(uint assetIndex, address allowTo, uint256 encryptedAssetIndex, uint256 encryptedAttributeIndex, uint256 encryptedSymmetricKey) public 
 	isAssetOwner(assetIndex) 
 	assetIndexInBound(assetIndex)
 	{
 	    require(assetIndex < allAssets.length);
 	    ReadPermissionEntry memory newPermissionEntry;
+	    newPermissionEntry.encryptedAssetIndex = encryptedAssetIndex;
 	    newPermissionEntry.encryptedAttributeIndex = encryptedAttributeIndex;
 	    newPermissionEntry.encryptedSymmetricKey = encryptedSymmetricKey;
-	    allAssets[assetIndex].readPermissionTable[allowTo].push(newPermissionEntry);
+	    readPermissionTable[allowTo].push(newPermissionEntry);
 	}
+	
 
 
 	function setAllowWrites(uint assetIndex, address allowTo, string attributeName, uint256 writeAmount) public 
