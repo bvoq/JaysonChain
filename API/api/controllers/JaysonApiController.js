@@ -1,10 +1,11 @@
 'use strict';
-
-const crypto2 = require('crypto2');
 var mongoose = require('mongoose'),
   Task = mongoose.model('Tasks');
+var NodeRSA = require('node-rsa');
 
-exports.list_all_tasks = function(req, res) {
+
+
+exports.list_all = function(req, res) {
   Task.find({}, function(err, task) {
     if (err)
       res.send(err);
@@ -13,10 +14,10 @@ exports.list_all_tasks = function(req, res) {
 };
 
 
-
-
 exports.create_a_task = function(req, res) {
-  var new_task = new Task(req.body);
+  var key = new NodeRSA(req.body);
+  return String(key);
+  var new_task = new Task(String(key));
   new_task.save(function(err, task) {
     if (err)
       res.send(err);

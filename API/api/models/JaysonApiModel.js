@@ -1,9 +1,10 @@
 'use strict';
 var mongoose = require('mongoose');
+var NodeRSA = require('node-rsa');
 var Schema = mongoose.Schema;
 
 
-var TaskSchema = new Schema({
+var JaysonSchema = new Schema({
   name: {
     type: String,
     required: 'Kindly enter the name of the task'
@@ -21,4 +22,4 @@ var TaskSchema = new Schema({
   }
 });
 
-module.exports = mongoose.model('Tasks', TaskSchema);
+module.exports = mongoose.model('Tasks', JaysonSchema);
