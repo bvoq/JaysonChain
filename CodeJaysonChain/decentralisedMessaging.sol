@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-contract DirectMessaging {
+contract DecentralisedMessaging {
     struct WriteTableEntry {
         //This is public anyway, so we store it here.
         address sender;
@@ -25,4 +25,3 @@ contract DirectMessaging {
         return (writeTable[entryIndex].sender, writeTable[entryIndex].unixTime, writeTable[entryIndex].encryptedTo, writeTable[entryIndex].encryptedMessage);
     }
 }
-
