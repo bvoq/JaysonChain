@@ -1,8 +1,6 @@
 pragma solidity ^0.4.19;
 
-import "./Owned.sol";
-
-contract JaysonChain is Owned {
+contract JaysonChain {
 	
 	modifier isAssetOwner(uint assetIndex){
 	    require(msg.sender == allAssets[assetIndex].owner);
@@ -59,22 +57,25 @@ contract JaysonChain is Owned {
 
 	
 	Asset[] public allAssets;
-	
+	Attribute[][] public allHistories;
+
 	function createAsset() public returns(uint256) {
-	    Asset newAsset;
-	    newAsset.owner = msg.sender;
-	    newAsset.assetIndex = allAssets.length;
-	    newAsset.unixTime = now;
-	    newAsset.internalTimeStamp = globalInternalTimeStamp;
+	    uint256 assetIndex = allAssets.length;
+	    allHistories.push(new Attribute[](0));
+
+	    Attribute[] storage hist = allHistories[assetIndex];
+	    Asset memory newAsset = Asset({owner:msg.sender, assetIndex:assetIndex, unixTime:now, internalTimeStamp:globalInternalTimeStamp, history:hist});
 	    allAssets.push(newAsset);
 	    globalInternalTimeStamp++;
 	    return newAsset.assetIndex;
 	}
 	
 	
+	
 	function addAttribute(uint assetIndex, string name, string data) public
 	assetIndexInBound(assetIndex)
 	{
+	    //TODO owner can always write and cannot give himself permission
         address author = msg.sender; 
 
 	    //Check if author may put name into allAssets[assetID].history, which is done in the permissionTable
@@ -90,7 +91,7 @@ contract JaysonChain is Owned {
 	    permissions[i].writeAmount--; //no underflow possible, since writeAmount ≠ 0
 	   
 	   
-	    Attribute newAttribute;
+	    Attribute storage newAttribute;
 	    newAttribute.author = author;
 	    newAttribute.attributeIndex = allAssets[assetIndex].history.length;
 	    newAttribute.internalTimeStamp = globalInternalTimeStamp;
@@ -112,11 +113,43 @@ contract JaysonChain is Owned {
     	globalInternalTimeStamp++;
 	}*/
 	
-	function readAttribute(uint assetIndex, uint attributeIndex) public view
+
+	function readAttributeAuthor(uint assetIndex, uint attributeIndex) public view
 	attributeIndexInBound(assetIndex, attributeIndex)
-	returns(Attribute)
+	returns(address author)
 	{
-	    return allAssets[assetIndex].history[attributeIndex];
+	    return allAssets[assetIndex].history[attributeIndex].author;
+	}
+	
+	
+	function readAttributeInternalTimeStamp(uint assetIndex, uint attributeIndex) public view
+	attributeIndexInBound(assetIndex, attributeIndex)
+	returns(uint256 internalTimeStamp)
+	{
+	    return allAssets[assetIndex].history[attributeIndex].internalTimeStamp;
+	}
+	
+	
+	function readAttributeUnixTime(uint assetIndex, uint attributeIndex) public view
+	attributeIndexInBound(assetIndex, attributeIndex)
+	returns(uint256 internalTimeStamp)
+	{
+	    return allAssets[assetIndex].history[attributeIndex].unixTime;
+	}
+	
+	function readAttributeName(uint assetIndex, uint attributeIndex) public view
+	attributeIndexInBound(assetIndex, attributeIndex)
+	returns(string name)
+	{
+	    return allAssets[assetIndex].history[attributeIndex].name;
+	}
+	
+	
+	function readAttributeData(uint assetIndex, uint attributeIndex) public view
+	attributeIndexInBound(assetIndex, attributeIndex)
+	returns(string data)
+	{
+	    return allAssets[assetIndex].history[attributeIndex].data;
 	}
 	
 
@@ -125,7 +158,7 @@ contract JaysonChain is Owned {
 	assetIndexInBound(assetIndex)
 	{
 	    require(assetIndex < allAssets.length);
-	    ReadPermissionEntry newPermissionEntry;
+	    ReadPermissionEntry storage newPermissionEntry;
 	    newPermissionEntry.encryptedAttributeIndex = encryptedAttributeIndex;
 	    newPermissionEntry.encryptedSymmetricKey = encryptedSymmetricKey;
 	    allAssets[assetIndex].readPermissionTable[allowTo].push(newPermissionEntry);
@@ -148,7 +181,7 @@ contract JaysonChain is Owned {
 	    
 	    if(writeAmount == 0) return;
 	     
-	    WritePermissionEntry newPermissionEntry;
+	    WritePermissionEntry storage newPermissionEntry;
 	    newPermissionEntry.attributeName = attributeName;
 	    newPermissionEntry.writeAmount = writeAmount;
         allAssets[assetIndex].writePermissionTable[allowTo].push(newPermissionEntry);
@@ -172,7 +205,7 @@ contract JaysonChain is Owned {
             }
         }
 	    
-	    WritePermissionEntry newPermissionEntry;
+	    WritePermissionEntry storage newPermissionEntry;
 	    newPermissionEntry.attributeName = attributeName;
 	    newPermissionEntry.writeAmount = writeAmount;
         allAssets[assetIndex].writePermissionTable[allowTo].push(newPermissionEntry);
