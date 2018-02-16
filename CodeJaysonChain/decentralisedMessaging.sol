@@ -33,7 +33,7 @@ contract DecentralisedMessaging {
         string encryptedTo; //if decrypted, this is an address
         string encryptedMessage; //if decrypted, this is a string
     }
-    MessageTableEntry[] messageTable;
+    MessageTableEntry[] public messageTable;
 
 
     //In order to send a message, you have to encrypt the parameters of sendMessage with the public key of the receiver.
@@ -47,7 +47,9 @@ contract DecentralisedMessaging {
         messageTable.push(messageTableEntry);
     }
 
-    //In order to read a message 
+    //This reads a message from the message table containing all the information (encryptedTo, encryptedMessage).
+    //Locally the reader then needs to decrypt the encryptedTo with his private key and then needs to check whether the decrypted address is the same as the readers.
+    //Then encryptedMessage needs to get decrypted with the readers private key to get the message.
     function getMessage(uint256 _messageIndex) view public accountInitialized(msg.sender)
     returns (address sender, uint256 unixTime, string encryptedTo, string encryptedMessage) {
         return (messageTable[_messageIndex].sender, messageTable[_messageIndex].unixTime, messageTable[_messageIndex].encryptedTo, messageTable[_messageIndex].encryptedMessage);
