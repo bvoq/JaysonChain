@@ -1,6 +1,9 @@
 JaysonChain
 ===========
 Authors: Simon Yuan, Fynn Faber, Florian Spychiger, Timofey Derkovsky, Henry Trinh, Kevin De Keyser
+-----
+
+
 First of all the final version is in the master branch!
 
 We have multiple iterated versions of our contract. In order to understand the code, we recommend you to look at the contracts in the following order:
