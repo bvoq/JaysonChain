@@ -5,7 +5,10 @@ contract DecentralisedMessaging {
     //Everyone that wants to use this contract must generate a private and public key according to some asymmetrical cryptograhy method, for example RSA.
     //Then he needs to call initAccount
     
-    modifier
+    modifier accountInitialized(address _address) {
+        require(accountDatas[_address].account != 0);
+        _;
+    }
 
     struct AccountData {
         address account;
@@ -22,7 +25,7 @@ contract DecentralisedMessaging {
     }
 
 
-    struct WriteTableEntry {
+    struct MessageTableEntry {
         //This is public anyway, so we store it here.
         address sender;
         uint256 unixTime;
@@ -30,22 +33,23 @@ contract DecentralisedMessaging {
         string encryptedTo; //if decrypted, this is an address
         string encryptedMessage; //if decrypted, this is a string
     }
-    WriteTableEntry[] writeTable;
+    MessageTableEntry[] messageTable;
 
 
     //In order to send a message, you have to encrypt the parameters of sendMessage with the public key of the receiver.
-    function sendMessage(string _encryptedTo, string _encryptedMessage) public {
-        WriteTableEntry memory writeTableEntry;
-        writeTableEntry.sender = msg.sender;
-        writeTableEntry.unixTime = now;
+    function sendMessage(string _encryptedTo, string _encryptedMessage) public accountInitialized(msg.sender) {
+        MessageTableEntry memory messageTableEntry;
+        messageTableEntry.sender = msg.sender;
+        messageTableEntry.unixTime = now;
 
-        writeTableEntry.encryptedTo = _encryptedTo; 
-        writeTableEntry.encryptedMessage = _encryptedMessage;
-        writeTable.push(writeTableEntry);
+        messageTableEntry.encryptedTo = _encryptedTo; 
+        messageTableEntry.encryptedMessage = _encryptedMessage;
+        messageTable.push(messageTableEntry);
     }
 
     //In order to read a message 
-    function getMessage(uint256 _entryIndex) view public returns (address sender, uint256 unixTime, string encryptedTo, string encryptedMessage) {
-        return (writeTable[_entryIndex].sender, writeTable[_entryIndex].unixTime, writeTable[_entryIndex].encryptedTo, writeTable[_entryIndex].encryptedMessage);
+    function getMessage(uint256 _messageIndex) view public accountInitialized(msg.sender)
+    returns (address sender, uint256 unixTime, string encryptedTo, string encryptedMessage) {
+        return (messageTable[_messageIndex].sender, messageTable[_messageIndex].unixTime, messageTable[_messageIndex].encryptedTo, messageTable[_messageIndex].encryptedMessage);
     }
 }
