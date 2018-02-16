@@ -1,18 +1,21 @@
 pragma solidity ^0.4.18;
 
 //For terminology purposes, the user that creates the contract is called the owner and the users using the contract as a messaging system are called accounts.
-contract DirectMessagingKnowable {
-
+contract DecentralisedMessagingKnowable {
+    //DM Features:
     //Everyone that wants to use this contract must generate a private and public key according to some asymmetrical cryptograhy method, for example RSA.
-    //Then he needs to call initAccount
+    //Then he needs to call initAccount and publish his public key to the blockchain.
+    //If account A wants to send a message to account B, account A simply encrypts his message and the receiver account with the public key of account B and pushes it to the messageTable.
+    //Account B locally reads all of the messageTable entries he didn't read already and tries to decrypt each message with his private key.
+    //If it worked, the decrypted receive address should match the address of account B and the decrypted message can now be read by account B.
 
-    //The directMessagingKnowable adds the additional functionality that we can see whether a message was read.
+    //DMK Features:
+    //The decentralisedMessagingKnowable adds the additional functionality that we can see whether a message was read.
     //This is done by adding a new information to AccountData, namely mostRecentlyReadIndex, which can be updated by the reader.
     //Messages should be read one after another in the messageTable 
     //If the user follows the protocol, you can now be sure that the receiver read the message, if mostRecentlyReadIndex is greater than the message index you sent.
     //This system basically works the same way WhatsApps blueflag system works, you can either tell everyone when you read the messages or nobody.
     //If you only want to notify certain people that you read their messages, you can create a new account for these specific people.
-
     //This system also enables a way to remember, what the last message was you read from the messageTable.
 
     modifier accountInitialized(address _address) {

@@ -2,8 +2,12 @@ pragma solidity ^0.4.18;
 
 //For terminology purposes, the user that creates the contract is called the owner and the users using the contract as a messaging system are called accounts.
 contract DecentralisedMessaging {
+    //DM Features:
     //Everyone that wants to use this contract must generate a private and public key according to some asymmetrical cryptograhy method, for example RSA.
-    //Then he needs to call initAccount
+    //Then he needs to call initAccount and publish his public key to the blockchain.
+    //If account A wants to send a message to account B, account A simply encrypts his message and the receiver account with the public key of account B and pushes it to the messageTable.
+    //Account B locally reads all of the messageTable entries he didn't read already and tries to decrypt each message with his private key.
+    //If it worked, the decrypted receive address should match the address of account B and the decrypted message can now be read by account B.
     
     modifier accountInitialized(address _address) {
         require(accountDatas[_address].account != 0);
