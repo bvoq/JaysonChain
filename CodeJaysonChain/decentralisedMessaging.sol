@@ -18,6 +18,7 @@ contract DecentralisedMessaging {
     //by checking MessageTableEntry.sender
     //6. He then only needs to decrypt the message with the same decryption scheme (first RSA, then AES-256 of the SHA-256 hash of the message index)
 
+    //Additionally account B knows when the transaction of the message was mined. Therefore he has an upper bound to when the message was sent.
     //Also the blockchain hinders spamming to the messageTable, since every add costs gas. Reads don't cost anything, so having a large messageTable wouldn't even charge gas, but would only cost more local computational time.
 
     modifier accountInitialized(address _address) {
