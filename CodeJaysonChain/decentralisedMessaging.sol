@@ -2,13 +2,22 @@ pragma solidity ^0.4.18;
 
 //For terminology purposes, the user that creates the contract is called the owner and the users using the contract as a messaging system are called accounts.
 contract DecentralisedMessaging {
-    //DM Features:
+    //DM Features (Decentralised Messaging):
     //Everyone that wants to use this contract must generate a private and public key according to some asymmetrical cryptograhy method, for example RSA.
     //Then he needs to call initAccount and publish his public key to the blockchain.
-    //If account A wants to send a message to account B, account A simply encrypts his message and the receiver account with the public key of account B and pushes it to the messageTable.
-    //Account B locally reads all of the messageTable entries he didn't read already and tries to decrypt each message with his private key.
-    //If it worked, the decrypted receive address should match the address of account B and the decrypted message can now be read by account B.
-    
+    //Using the blockchain we can now solve decentralised messaging as follows. Account A can send a message to account B using the following way:
+    //1. Account A encrypts his message with a symmetric key, which is equal to the hash of the length of the messageTable.
+    //This has to be a symmetric encryption scheme, where every possible hash can be used as a symmetric key.
+    //For example: The length of the message table could be hashed using SHA-256. Then you use this 256 hash as a symmetric key for AES-256.
+    //2. On top of that, account A then encrypts the message with the public key of account B.
+    //3. Now account A writes to the messageTable, but this only works if the messageTable didn't in change in length. This can be achieved, by using the following method defined below:
+    // function sendMessage(string _encryptedTo, string _encryptedMessage, uint256 _expectedLengthOfMessageTable);
+    //If the length changed, the transaction will simply revert and account A has to retry (start at step 1 again).
+    //4. Account B then decrypts every message he hasn't read yet with his private key. After this decryption he also decrypts the message with the hash of the messageTable index.
+    //5. If the decrypted receiver address is equal to the address of account B, then B knows the message was intended for him. He also knows that the message is from A (proof of origin)
+    //by checking MessageTableEntry.sender
+    //6. He then only needs to decrypt the message with the same decryption scheme (first RSA, then AES-256 of the SHA-256 hash of the message index)
+
     modifier accountInitialized(address _address) {
         require(accountDatas[_address].account != 0);
         _;
@@ -45,7 +54,8 @@ contract DecentralisedMessaging {
 
 
     //In order to send a message, you have to encrypt the parameters of sendMessage with the public key of the receiver.
-    function sendMessage(string _encryptedTo, string _encryptedMessage) public accountInitialized(msg.sender) {
+    function sendMessage(string _encryptedTo, string _encryptedMessage, uint256 _expectedLengthOfMessageTable) public accountInitialized(msg.sender) {
+        require(_expectedLengthOfMessageTable == messageTable.length);
         MessageTableEntry memory messageTableEntry;
         messageTableEntry.sender = msg.sender;
         messageTableEntry.unixTime = now;

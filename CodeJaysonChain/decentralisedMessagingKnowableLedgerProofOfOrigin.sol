@@ -1,7 +1,7 @@
 pragma solidity ^0.4.18;
 
 //For terminology purposes, the user that creates the contract is called the owner and the users using the contract as a messaging system are called accounts.
-contract DecentralisedMessagingKnowableLedger {
+contract DecentralisedMessagingKnowableLedgerProofOfOrigin {
     //DM Features (Decentralised Messaging):
     //Everyone that wants to use this contract must generate a private and public key according to some asymmetrical cryptograhy method, for example RSA.
     //Then he needs to call initAccount and publish his public key to the blockchain.
@@ -47,82 +47,44 @@ contract DecentralisedMessagingKnowableLedger {
     //5. The parties themselves can then send the symmetric keys to each other to make sure that all of them received the symmetric key (so you can't cheat and tell someone that you wrote this mail to someone who didn't actually receive).
     //You can of course choose, who you want to add to the CC and who you want to add to the BCC, similairly to Email.
 
-    modifier accountInitialized(address _address) {
-        require(accountDatas[_address].account != 0);
-        _;
-    }
+    //Use DMKL for proof-of-path (DMKLPoP):
+    //This new contract, is exactly the same as the DMKL, it only adds the concept of proof of origin as a new protocol, but it doesn't change in the contract.
+    //DMKLPoO adds trustless forwardability of messages. 
+    //Using this system account A can send a forwardable message to account B and now account B can show account C that he received this message from account A in a trustless way (Forwarding).
+    //This is done by the following way:
+    //1. Account A stores the message and the address of B on its own ledger encrypted with the symmetric key of the ledger entry index.
+    //2. Account A then sends the symmetric key and the ledger entry index to account B using the DM system in a safe way.
+    //3. Account B now reads the message from A by decrypting it with the received symmetric key.
+    //4. Account B now stores this symmetric key (and its respective ledger entry index) in its own ledger and encrypts it with account B's symmetric key
+    // (if he wants to make his message forwardable again, he simply would need to store the address of C in the ledger entry as well).
+    //5. Account B then sends his symmetric key (and the ledger entry index of B's ledger) to account C.
+    //6. Now account C can follow the chain of B's ledger entry to A's ledger entry and he knows, that A sent the message to B.
 
-    struct LedgerTableEntry {
-        string symmetricallyEncryptedMessage;
-    }
-
-    struct AccountData {
-        address account;
-        uint256 publicKey;
-        uint256 mostRecentlyReadIndex;
-
-        uint256 ledgerTableLength;
-        mapping(uint256 => LedgerTableEntry) ledgerTable;
-    }
-    mapping(address => AccountData) accountDatas;
+    //These forwardable messages can also be broadcasted to multiple accounts. 
 
 
-    function initAccount (uint256 _publicKey) public {
-        require(accountDatas[msg.sender].account == 0); //checks if the account was never initialised before.
-        AccountData memory accountData;
-        accountData.account = msg.sender;
-        accountData.publicKey = _publicKey;
-        accountData.mostRecentlyReadIndex = messageTable.length - 1;
-        accountData.ledgerTableLength = 0;
-        accountDatas[msg.sender] = accountData;
-    }
+    //3. If account B wants to forward this message to account C, B simply decrypts the message
+    
+    In order for this to work, each forwardable message needs to be stored not only on the messageTable, but also on the ledger of the sender.
+    //On the ledger of the sender, you don't store the plain (decrypted) message, but you encrypt the message entry with the symmetric key of the respectible ledger entry.
+    //As a reminder, the message sent on the messageTable is encrypted with the public key of the receiver.
 
-    //According to the protocol
-    function addLedgerTableEntry(string _symmetricallyEncryptedMessage, uint256 _expectedLedgerTableLength) public accountInitialized(msg.sender) {
-        require(accountDatas[msg.sender].ledgerTableLength == _expectedLedgerTableLength);
-        LedgerTableEntry memory ledgerTableEntry;
-        ledgerTableEntry.symmetricallyEncryptedMessage = _symmetricallyEncryptedMessage;
-        accountDatas[msg.sender].ledgerTable[accountDatas[msg.sender].ledgerTableLength] = ledgerTableEntry;
-        accountDatas[msg.sender].ledgerTableLength++;
-    }
+    //1. A sends a forwardable message to account B. This means that account A stores the message on its ledger and on the messageTable,
+    //However account C needs to trust account B to send him the correct message, since account B can  put anything in his ledger.
+    //In the next version account C does not need to trust account B anymore.
+    //Using the ledgers, we can also send messages to multiple trusted accounts by giving the shared symmetric key to each of them. Notice, this wasn't previously possible, since you can't share your private key.
 
-    //This is simply a function that allows you to view the ledger table entry of any account. Keep in mind its only read-able if you have the symmetric key.
-    function getLedgerTableEntry(address _accountAddress, uint256 _ledgerTableEntryIndex) public view accountInitialized(msg.sender) accountInitialized(_accountAddress)
-    returns (string symmetricallyEncryptedMessage) {
-        require(accountDatas[_accountAddress].ledgerTableLength > _ledgerTableEntryIndex);
-        LedgerTableEntry storage ledgerTableEntryPointer = accountDatas[_accountAddress].ledgerTable[_ledgerTableEntryIndex];
-        return ledgerTableEntryPointer.symmetricallyEncryptedMessage;
-    }
+    
+    //However you don't store the plain (decrypted) message entry, you encrypt the message entry with a seperate symmetric key and then add it to the ledger.
+    //The symmetric key is generated by the hash of the ledger entry index and the private key of the account.
+    //You can now add to your ledger messages from the messageTable accor
+    //Everybody that follows the protocol should only add messages from the messageTable to his ledger according to the above method.
+    //If somoene adds something else to his ledger (for example simply a message with some random encrypted), this doesn't effect anyone else who follows the protocol.
+    //You can show other accounts whats in your ledger by sharing the symmetric key of the respective ledger table entry.
+    //The symmetric key can be shared using the message table as a simple message.
+    //In this system account A can send something to account B. Now account B can show account C that he received this message from account A (by showing his ledger table entry).
+    //However account C needs to trust account B to send him the correct message, since account B can  put anything in his ledger.
+    //In the next version account C does not need to trust account B anymore.
+    //Using the ledgers, we can also send messages to multiple trusted accounts by giving the shared symmetric key to each of them. Notice, this wasn't previously possible, since you can't share your private key.
 
-    struct MessageTableEntry {
-        //This is public anyway, so we store it here.
-        address sender;
-        uint256 unixTime;
-
-        string encryptedTo; //if decrypted, this is an address
-        string encryptedMessage; //if decrypted, this is a string
-    }
-    MessageTableEntry[] public messageTable;
-
-    function sendMessage(string _encryptedTo, string _encryptedMessage, uint256 _expectedLengthOfMessageTable) public accountInitialized(msg.sender) {
-        require(_expectedLengthOfMessageTable == messageTable.length);
-        MessageTableEntry memory messageTableEntry;
-        messageTableEntry.sender = msg.sender;
-        messageTableEntry.unixTime = now;
-
-        messageTableEntry.encryptedTo = _encryptedTo; 
-        messageTableEntry.encryptedMessage = _encryptedMessage;
-        messageTable.push(messageTableEntry);
-    }
-
-    function updateMostRecentlyReadIndex (uint256 _newIndex) public accountInitialized(msg.sender) {
-        require(_newIndex < messageTable.length && accountDatas[msg.sender].mostRecentlyReadIndex < _newIndex);
-        accountDatas[msg.sender].mostRecentlyReadIndex = _newIndex;
-    }
-
-    //In order to read a message 
-    function getMessage(uint256 _messageIndex) view public accountInitialized(msg.sender)
-    returns (address sender, uint256 unixTime, string encryptedTo, string encryptedMessage) {
-        return (messageTable[_messageIndex].sender, messageTable[_messageIndex].unixTime, messageTable[_messageIndex].encryptedTo, messageTable[_messageIndex].encryptedMessage);
-    }
 }
