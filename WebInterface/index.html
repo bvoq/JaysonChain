@@ -20,25 +20,31 @@
 
                 <h1>JaysonChain</h1>
                        
-                <textarea id="text" rows="5" cols="70"></textarea>
-            
-                <button id="AssetButton">Get Assets</button>
-                
-                <label for="name" class="col-lg-2 control-label">Asset ID</label>
-                <input id="assetid" type="text">
+                <label for="messagelabel" class="col-lg-2 control-label">Message you want to write:</label>
+				<textarea id="messagetext" rows="5" cols="70"></textarea>
+             
+                 <label for="messagelabel" class="col-lg-2 control-label">Receiver(s) (seperate with comma):</label>
+				<textarea id="messagetext" rows="5" cols="70"></textarea>
+                <button id="AssetButton">Write Non-Forwardable message</button>
+                <button id="AssetButton">Write Forwardable message</button>
 
-                <button id="newAssetButton">Create Asset</button>
-            
-                <label for="name" class="col-lg-2 control-label">Grant Permission</label>
-                <input id="age" type="text">
-            
-                <label for="name" class="col-lg-2 control-label">Set Permission</label>
-                <input id="age" type="text">
-            
-                <label for="name" class="col-lg-2 control-label">Push Asset</label>
-                <input id="age" type="text">
-                       
-            
+                <label for="name" class="col-lg-2 control-label">Messages I received</label>
+                
+                <label for="msg1" class="col-lg-2 control-label">Non-Forwardable Message 1:</label>
+                <p>From: Henry</p>
+                <p>Mined message at: 14 december 2017</p>
+                <p>Message content: "Hello, this is a nice message UwU."</p>
+
+                
+                <label for="msg1" class="col-lg-2 control-label">Forwardable Message 1:</label>
+                <p>From: Florian</p>
+                <p>Mined message at: 3 februar 2018</p>
+                <p>Message content: "I am 180cm tall."</p>
+                <label for="msg1" class="col-lg-2 control-label">Forward to the following receiver(s):</label>
+                <textarea id="messagetext" rows="5" cols="70"></textarea>
+                <button id="AssetButton">Forward the message</button>
+
+         
               </div>
    
     
