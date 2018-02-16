@@ -50,6 +50,7 @@ contract DecentralisedMessagingKnowableLedger {
     //5. The parties themselves can then send the symmetric keys to each other to make sure that all of them received the symmetric key (so you can't cheat and tell someone that you wrote this mail to someone who didn't actually receive).
     //You can of course choose, who you want to add to the CC and who you want to add to the BCC, similairly to Email.
 
+
     modifier accountInitialized(address _address) {
         require(accountDatas[_address].account != 0);
         _;
