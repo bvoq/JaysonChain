@@ -14,7 +14,11 @@ contract DecentralisedMessaging {
         address account;
         uint256 publicKey;
     }
-    mapping(address => AccountData) accountDatas;
+    mapping(address => AccountData) public accountDatas;
+
+    function getPublicKey (address from) view public accountInitialized(msg.sender) accountInitialized(from) returns (uint256 publicKey) {
+        return accountDatas[from].publicKey;
+    }
 
     function initAccount (uint256 _publicKey) public {
         require(accountDatas[msg.sender].account == 0); //checks if the account was never initialised before.

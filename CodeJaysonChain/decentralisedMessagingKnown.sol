@@ -6,6 +6,15 @@ contract DirectMessagingKnowable {
     //Everyone that wants to use this contract must generate a private and public key according to some asymmetrical cryptograhy method, for example RSA.
     //Then he needs to call initAccount
 
+    //The directMessagingKnowable adds the additional functionality that we can see whether a message was read.
+    //This is done by adding a new information to AccountData, namely mostRecentlyReadIndex, which can be updated by the reader.
+    //Messages should be read one after another in the messageTable 
+    //If the user follows the protocol, you can now be sure that the receiver read the message, if mostRecentlyReadIndex is greater than the message index you sent.
+    //This system basically works the same way WhatsApps blueflag system works, you can either tell everyone when you read the messages or nobody.
+    //If you only want to notify certain people that you read their messages, you can create a new account for these specific people.
+
+    //This system also enables a way to remember, what the last message was you read from the messageTable.
+
     modifier accountInitialized(address _address) {
         require(accountDatas[_address].account != 0);
         _;
@@ -49,12 +58,14 @@ contract DirectMessagingKnowable {
         messageTable.push(messageTableEntry);
     }
 
-    //In order to read a message 
-    function getMessage(uint256 _messageIndex) public accountInitialized(msg.sender)
-    returns (address sender, uint256 unixTime, string encryptedTo, string encryptedMessage) {
-        require(_messageIndex <= accountDatas[msg.sender].mostRecentlyReadIndex + 1); //This forces the reader to read only messages he read before or he can read one new message in order.
-        if(_messageIndex > accountDatas[msg.sender].mostRecentlyReadIndex) accountDatas[msg.sender].mostRecentlyReadIndex = _messageIndex;
+    function updateMostRecentlyReadIndex (uint256 _newIndex) public accountInitialized(msg.sender) {
+        require(_newIndex < messageTable.length && accountDatas[msg.sender].mostRecentlyReadIndex < _newIndex);
+        accountDatas[msg.sender].mostRecentlyReadIndex = _newIndex;
+    }
 
+    //In order to read a message 
+    function getMessage(uint256 _messageIndex) view public accountInitialized(msg.sender)
+    returns (address sender, uint256 unixTime, string encryptedTo, string encryptedMessage) {
         return (messageTable[_messageIndex].sender, messageTable[_messageIndex].unixTime, messageTable[_messageIndex].encryptedTo, messageTable[_messageIndex].encryptedMessage);
     }
 }
