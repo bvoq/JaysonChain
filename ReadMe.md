@@ -1,7 +1,7 @@
 JaysonChain
 ===========
-Authors: Simon Yuan, Fynn Faber, Florian Spychiger, Timofey Derkovsky, Henry Trinh, Kevin De Keyser
------
+**Authors: Simon Yuan, Fynn Faber, Florian Spychiger, Timofey Derkovsky, Henry Trinh, Kevin De Keyser**
+
 
 
 First of all the final version is in the master branch!
